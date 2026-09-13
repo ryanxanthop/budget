@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morgan & Ryan — Household Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1E7;
+    --card:#FBFBF7;
+    --ink:#1E2A22;
+    --ink-soft:#5B6459;
+    --rule:#D3D8C6;
+    --teal:#2F5D50;
+    --teal-deep:#1F4238;
+    --gold:#B0812E;
+    --rose:#B5525A;
+    --rose-bg:#F5E4E3;
+    --gold-bg:#F3EAD6;
+    --teal-bg:#E4EDE7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding:32px 16px 96px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  header.ledger-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  header.ledger-head .names{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:2.1rem;
+    letter-spacing:-0.01em;
+    line-height:1.05;
+  }
+  header.ledger-head .names em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--teal);
+  }
+  header.ledger-head .sub{
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  header.ledger-head .cycle-label{
+    font-size:0.7rem;
+    color:var(--ink-soft);
+    border:1px solid var(--rule);
+    border-radius:20px;
+    padding:5px 12px;
+    background:var(--card);
+    white-space:nowrap;
+  }
+
+  section{margin-bottom:34px;}
+  .section-title{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:12px;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .section-title h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.15rem;
+    margin:0;
+  }
+  .section-title .hint{
+    font-size:0.75rem;
+    color:var(--ink-soft);
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    overflow:hidden;
+  }
+
+  /* generic simple row (income / spending amounts) */
+  .row.simple{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:11px 14px;
+    border-bottom:1px solid var(--rule);
+  }
+  .row.simple:last-child{border-bottom:none;}
+  .row.simple input[type="text"]{
+    border:none;background:transparent;font-family:'Inter',sans-serif;
+    font-size:0.92rem;color:var(--ink);width:100%;
+  }
+  .row.simple input[type="text"]:disabled{color:var(--ink);opacity:0.8;}
+
+  /* bill / food / savings line item: name+amount+cycle on line 1, account transfer target on line 2 */
+  .item-row{
+    padding:10px 14px;
+    border-bottom:1px solid var(--rule);
+  }
+  .item-row:last-child{border-bottom:none;}
+  .item-row .line1{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .item-row .line1 .name-input{
+    flex:1 1 140px;
+    min-width:100px;
+    border:none;background:transparent;font-family:'Inter',sans-serif;
+    font-size:0.92rem;color:var(--ink);padding:2px 0;
+  }
+  .item-row .line1 .name-input:focus{outline:none;border-bottom:1px solid var(--teal);}
+  .item-row .line1 .name-input:disabled{opacity:0.8;}
+  .item-row .line2{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:5px;
+    padding-left:2px;
+  }
+  .item-row .line2 .arrow{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+  }
+  .item-row .line2 input.account-input{
+    border:none;
+    border-bottom:1px dashed var(--rule);
+    background:transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.74rem;
+    color:var(--teal-deep);
+    padding:2px 2px;
+    width:150px;
+  }
+  .item-row .line2 input.account-input:focus{outline:none;border-bottom:1px solid var(--teal);}
+
+  .amount-field{
+    display:flex;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    flex:0 0 auto;
+  }
+  .amount-field span.dollar{color:var(--ink-soft);margin-right:2px;}
+  .amount-field input[type="number"]{
+    border:none;
+    background:transparent;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    color:var(--ink);
+    width:76px;
+    text-align:right;
+    -moz-appearance:textfield;
+  }
+  .amount-field input[type="number"]::-webkit-outer-spin-button,
+  .amount-field input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .amount-field input[type="number"]:focus{outline:none;}
+
+  select.cycle{
+    font-family:'Inter',sans-serif;
+    font-size:0.76rem;
+    color:var(--ink-soft);
+    background:transparent;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:4px 5px;
+    flex:0 0 auto;
+  }
+
+  .fortnight-val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    font-weight:500;
+    min-width:74px;
+    text-align:right;
+    flex:0 0 auto;
+  }
+
+  .remove-btn{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:1.1rem;
+    cursor:pointer;
+    line-height:1;
+    padding:0 2px;
+    flex:0 0 auto;
+  }
+  .remove-btn:hover{color:var(--rose);}
+
+  .add-row{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    border-top:1px dashed var(--rule);
+    color:var(--teal);
+    font-family:'Inter',sans-serif;
+    font-size:0.82rem;
+    padding:9px 14px;
+    cursor:pointer;
+  }
+  .add-row:hover{background:var(--teal-bg);}
+
+  .total-row{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 14px;
+    background:var(--teal-bg);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:500;
+    font-size:0.92rem;
+  }
+  .total-row .label{font-family:'Inter',sans-serif;font-weight:500;color:var(--teal-deep);}
+
+  /* Transfers section */
+  .transfer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:11px 14px;
+    border-bottom:1px solid var(--rule);
+    gap:10px;
+  }
+  .transfer-row:last-child{border-bottom:none;}
+  .transfer-row .acct{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    min-width:0;
+  }
+  .transfer-row .acct .name{
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    font-size:0.92rem;
+  }
+  .transfer-row .acct .count{
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .transfer-row .amt{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.95rem;
+    font-weight:600;
+    color:var(--teal-deep);
+    white-space:nowrap;
+  }
+  .transfer-row.leftover .amt{color:var(--gold);}
+  .transfer-row .account-input{
+    border:none;
+    border-bottom:1px dashed var(--rule);
+    background:transparent;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    font-size:0.92rem;
+    color:var(--ink);
+    padding:2px 2px;
+  }
+  .transfer-row .account-input:focus{outline:none;border-bottom:1px solid var(--teal);}
+  .transfer-check{
+    padding:10px 14px;
+    font-size:0.74rem;
+    color:var(--ink-soft);
+    border-top:1px dashed var(--rule);
+  }
+  .transfer-check.balanced{color:var(--teal);}
+  .transfer-check.unbalanced{color:var(--rose);}
+
+  /* Summary */
+  .summary{
+    border:2px solid var(--ink);
+    border-radius:6px;
+    padding:20px;
+    background:var(--card);
+  }
+  .summary-line{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.9rem;
+    padding:5px 0;
+    color:var(--ink-soft);
+  }
+  .summary-line.income{color:var(--ink);font-weight:500;}
+  .summary-divider{border-top:1px solid var(--rule);margin:8px 0;}
+  .summary-final{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding-top:6px;
+  }
+  .summary-final .label{
+    font-family:'Fraunces', serif;
+    font-size:1.05rem;
+    font-weight:600;
+  }
+  .summary-final .value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:1.7rem;
+    font-weight:600;
+  }
+  .summary-final.positive .value{color:var(--teal);}
+  .summary-final.negative .value{color:var(--rose);}
+
+  .save-note{
+    position:fixed;
+    bottom:16px;
+    right:16px;
+    font-size:0.72rem;
+    color:var(--ink-soft);
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:6px 12px;
+    border-radius:20px;
+    opacity:0;
+    transition:opacity 0.4s ease;
+  }
+  .save-note.show{opacity:1;}
+
+  footer.actions{
+    display:flex;
+    justify-content:center;
+    margin-top:36px;
+  }
+  footer.actions button{
+    background:none;
+    border:1px solid var(--rule);
+    color:var(--ink-soft);
+    font-family:'Inter',sans-serif;
+    font-size:0.78rem;
+    padding:8px 16px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  footer.actions button:hover{border-color:var(--rose);color:var(--rose);}
+
+  @media (max-width:480px){
+    header.ledger-head .names{font-size:1.6rem;}
+    .item-row .line2 input.account-input{width:110px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="ledger-head">
+    <div>
+      <div class="names">Morgan <em>&</em> Ryan</div>
+      <div class="sub">Household ledger, per fortnight</div>
+    </div>
+    <div class="cycle-label" id="lastUpdated">Not yet saved</div>
+  </header>
+
+  <section>
+    <div class="section-title"><h2>Income</h2></div>
+    <div class="card" id="incomeCard"></div>
+  </section>
+
+  <section>
+    <div class="section-title">
+      <h2>Shared bills</h2>
+      <span class="hint">set which account each one transfers to</span>
+    </div>
+    <div class="card" id="billsCard"></div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Spending money</h2></div>
+    <div class="card" id="spendingCard"></div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Food shopping</h2></div>
+    <div class="card" id="foodCard"></div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Savings & buffer</h2></div>
+    <div class="card" id="savingsCard"></div>
+  </section>
+
+  <section>
+    <div class="section-title">
+      <h2>Transfers to set up</h2>
+      <span class="hint">grouped from the accounts above</span>
+    </div>
+    <div class="card" id="transfersCard"></div>
+  </section>
+
+  <section>
+    <div class="section-title"><h2>Fortnightly summary</h2></div>
+    <div class="summary" id="summaryCard"></div>
+  </section>
+
+  <footer class="actions">
+    <button id="resetBtn">Reset to starting figures</button>
+  </footer>
+
+</div>
+<div class="save-note" id="saveNote">Saved</div>
+
+<script>
+const CYCLES = {
+  weekly:   { label: 'Weekly',    mult: 2 },
+  fortnightly: { label: 'Fortnightly', mult: 1 },
+  monthly:  { label: 'Monthly',   mult: 12/26 },
+  quarterly:{ label: 'Quarterly', mult: 4/26 },
+  yearly:   { label: 'Yearly',    mult: 1/26 },
+};
+
+const DEFAULT_DATA = {
+  income: { morgan: 2446, ryan: 2480 },
+  bills: [
+    { id:'b1', name:'House rates',     amount:692,  cycle:'quarterly', account:'Bills' },
+    { id:'b2', name:'Home loan',       amount:1235, cycle:'weekly',    account:'Home loan' },
+    { id:'b3', name:'Water',           amount:500,  cycle:'quarterly', account:'Bills' },
+    { id:'b4', name:'Electricity',     amount:400,  cycle:'monthly',   account:'Bills' },
+    { id:'b5', name:'Home insurance',  amount:250,  cycle:'monthly',   account:'Bills' },
+    { id:'b6', name:'Gas',             amount:300,  cycle:'quarterly', account:'Bills' },
+    { id:'b7', name:'Internet',        amount:110,  cycle:'monthly',   account:'Bills' },
+    { id:'b8', name:'Car insurance',   amount:92,   cycle:'monthly',   account:'Bills' },
+    { id:'b9', name:'Spotify',         amount:20,   cycle:'monthly',   account:'Bills' },
+    { id:'b10', name:'HBO',            amount:12,   cycle:'monthly',   account:'Bills' },
+    { id:'b11', name:'Disney+',        amount:10,   cycle:'monthly',   account:'Bills' },
+  ],
+  spending: { ryan: 100, morgan: 400 },
+  food: {
+    week1: { amount:250, account:'Bank SA' },
+    week2: { amount:250, account:'Bank SA 2' },
+  },
+  savings: [
+    { id:'s1', name:'Savings',         amount:300, account:'AFG Savings' },
+    { id:'s2', name:'Emergency fund',  amount:400, account:'Emergency fund' },
+  ],
+  leftoverAccount: 'Spare buffer',
+};
+
+let data = null;
+let idCounter = 1000;
+let saveTimeout = null;
+
+function fmt(n){
+  const v = isFinite(n) ? n : 0;
+  return v.toLocaleString('en-AU', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function newId(prefix){ idCounter += 1; return prefix + idCounter; }
+
+function migrate(d){
+  d.bills = (d.bills || []).map(b => ({ account:'Bills', ...b }));
+  if(!d.food) d.food = JSON.parse(JSON.stringify(DEFAULT_DATA.food));
+  ['week1','week2'].forEach((k,i) => {
+    if(typeof d.food[k] === 'number'){
+      d.food[k] = { amount:d.food[k], account: i===0 ? 'Bank SA' : 'Bank SA 2' };
+    }
+    if(!d.food[k].account) d.food[k].account = i===0 ? 'Bank SA' : 'Bank SA 2';
+  });
+  d.savings = (d.savings || []).map(s => ({ account:s.name, ...s }));
+  if(!d.leftoverAccount) d.leftoverAccount = 'Spare buffer';
+  return d;
+}
+
+async function loadData(){
+  try{
+    const raw = window.localStorage.getItem('budget-data');
+    if(raw){
+      data = migrate(JSON.parse(raw));
+      document.getElementById('lastUpdated').textContent = 'Loaded your saved figures';
+      return;
+    }
+  }catch(e){ /* no saved data yet, or storage blocked */ }
+  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  document.getElementById('lastUpdated').textContent = 'Starting figures — edit anything';
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    try{
+      window.localStorage.setItem('budget-data', JSON.stringify(data));
+      const note = document.getElementById('saveNote');
+      note.classList.add('show');
+      setTimeout(()=>note.classList.remove('show'), 1200);
+      document.getElementById('lastUpdated').textContent = 'Saved just now';
+    }catch(e){
+      console.error('Save failed', e);
+      document.getElementById('lastUpdated').textContent = 'Could not save (storage blocked)';
+    }
+  }, 400);
+}
+
+function fortnightlyOf(amount, cycle){
+  const mult = (CYCLES[cycle] || CYCLES.fortnightly).mult;
+  return (Number(amount) || 0) * mult;
+}
+
+// ---------- Renderers ----------
+
+function renderIncome(){
+  const card = document.getElementById('incomeCard');
+  card.innerHTML = '';
+  ['morgan','ryan'].forEach(key=>{
+    const row = document.createElement('div');
+    row.className = 'row simple';
+    const label = key === 'morgan' ? 'Morgan' : 'Ryan';
+    row.innerHTML = `
+      <input type="text" value="${label}" disabled />
+      <div class="amount-field"><span class="dollar">$</span>
+        <input type="number" step="1" value="${data.income[key]}" data-income="${key}" />
+      </div>`;
+    card.appendChild(row);
+  });
+  const total = data.income.morgan + data.income.ryan;
+  const totalRow = document.createElement('div');
+  totalRow.className = 'total-row';
+  totalRow.innerHTML = `<span class="label">Total income</span><span>$${fmt(total)}</span>`;
+  card.appendChild(totalRow);
+
+  card.querySelectorAll('input[data-income]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      data.income[e.target.dataset.income] = Number(e.target.value);
+      renderAll();
+    });
+  });
+}
+
+function renderBills(){
+  const card = document.getElementById('billsCard');
+  card.innerHTML = '';
+  let total = 0;
+  data.bills.forEach(bill=>{
+    const fn = fortnightlyOf(bill.amount, bill.cycle);
+    total += fn;
+    const cycleOptions = Object.keys(CYCLES).map(c=>
+      `<option value="${c}" ${c===bill.cycle?'selected':''}>${CYCLES[c].label}</option>`).join('');
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="line1">
+        <input type="text" class="name-input" value="${bill.name}" data-bill-name="${bill.id}" />
+        <div class="amount-field"><span class="dollar">$</span>
+          <input type="number" step="1" value="${bill.amount}" data-bill-amount="${bill.id}" />
+        </div>
+        <select class="cycle" data-bill-cycle="${bill.id}">${cycleOptions}</select>
+        <span class="fortnight-val">$${fmt(fn)}</span>
+        <button class="remove-btn" data-bill-remove="${bill.id}" title="Remove">×</button>
+      </div>
+      <div class="line2">
+        <span class="arrow">transfers to</span>
+        <input type="text" class="account-input" value="${bill.account || 'Bills'}" data-bill-account="${bill.id}" />
+      </div>`;
+    card.appendChild(row);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row';
+  addBtn.textContent = '+ Add a bill';
+  addBtn.addEventListener('click', ()=>{
+    data.bills.push({ id:newId('b'), name:'New bill', amount:0, cycle:'monthly', account:'Bills' });
+    renderAll();
+  });
+  card.appendChild(addBtn);
+
+  const totalRow = document.createElement('div');
+  totalRow.className = 'total-row';
+  totalRow.innerHTML = `<span class="label">Total bills / fortnight</span><span>$${fmt(total)}</span>`;
+  card.appendChild(totalRow);
+
+  card.querySelectorAll('[data-bill-name]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const b = data.bills.find(x=>x.id===e.target.dataset.billName);
+      b.name = e.target.value;
+      scheduleSave();
+    });
+  });
+  card.querySelectorAll('[data-bill-account]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const b = data.bills.find(x=>x.id===e.target.dataset.billAccount);
+      b.account = e.target.value;
+      renderTransfers();
+      scheduleSave();
+    });
+  });
+  card.querySelectorAll('[data-bill-amount]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const b = data.bills.find(x=>x.id===e.target.dataset.billAmount);
+      b.amount = Number(e.target.value);
+      renderAll();
+    });
+  });
+  card.querySelectorAll('[data-bill-cycle]').forEach(sel=>{
+    sel.addEventListener('change', e=>{
+      const b = data.bills.find(x=>x.id===e.target.dataset.billCycle);
+      b.cycle = e.target.value;
+      renderAll();
+    });
+  });
+  card.querySelectorAll('[data-bill-remove]').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      data.bills = data.bills.filter(x=>x.id!==e.target.dataset.billRemove);
+      renderAll();
+    });
+  });
+}
+
+function renderSpending(){
+  const card = document.getElementById('spendingCard');
+  card.innerHTML = '';
+  ['morgan','ryan'].forEach(key=>{
+    const row = document.createElement('div');
+    row.className = 'row simple';
+    const label = key === 'morgan' ? 'Morgan' : 'Ryan';
+    row.innerHTML = `
+      <input type="text" value="${label}" disabled />
+      <div class="amount-field"><span class="dollar">$</span>
+        <input type="number" step="1" value="${data.spending[key]}" data-spend="${key}" />
+      </div>`;
+    card.appendChild(row);
+  });
+  const total = data.spending.morgan + data.spending.ryan;
+  const totalRow = document.createElement('div');
+  totalRow.className = 'total-row';
+  totalRow.innerHTML = `<span class="label">Total spending money</span><span>$${fmt(total)}</span>`;
+  card.appendChild(totalRow);
+
+  card.querySelectorAll('[data-spend]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      data.spending[e.target.dataset.spend] = Number(e.target.value);
+      renderAll();
+    });
+  });
+}
+
+function renderFood(){
+  const card = document.getElementById('foodCard');
+  card.innerHTML = '';
+  [['week1','Week 1'],['week2','Week 2']].forEach(([key,label])=>{
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="line1">
+        <input type="text" class="name-input" value="${label}" disabled />
+        <div class="amount-field"><span class="dollar">$</span>
+          <input type="number" step="1" value="${data.food[key].amount}" data-food-amount="${key}" />
+        </div>
+      </div>
+      <div class="line2">
+        <span class="arrow">transfers to</span>
+        <input type="text" class="account-input" value="${data.food[key].account}" data-food-account="${key}" />
+      </div>`;
+    card.appendChild(row);
+  });
+  const total = data.food.week1.amount + data.food.week2.amount;
+  const totalRow = document.createElement('div');
+  totalRow.className = 'total-row';
+  totalRow.innerHTML = `<span class="label">Total food / fortnight</span><span>$${fmt(total)}</span>`;
+  card.appendChild(totalRow);
+
+  card.querySelectorAll('[data-food-amount]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      data.food[e.target.dataset.foodAmount].amount = Number(e.target.value);
+      renderAll();
+    });
+  });
+  card.querySelectorAll('[data-food-account]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      data.food[e.target.dataset.foodAccount].account = e.target.value;
+      renderTransfers();
+      scheduleSave();
+    });
+  });
+}
+
+function renderSavings(){
+  const card = document.getElementById('savingsCard');
+  card.innerHTML = '';
+  let total = 0;
+  data.savings.forEach(item=>{
+    total += Number(item.amount) || 0;
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="line1">
+        <input type="text" class="name-input" value="${item.name}" data-sav-name="${item.id}" />
+        <div class="amount-field"><span class="dollar">$</span>
+          <input type="number" step="1" value="${item.amount}" data-sav-amount="${item.id}" />
+        </div>
+        <button class="remove-btn" data-sav-remove="${item.id}" title="Remove">×</button>
+      </div>
+      <div class="line2">
+        <span class="arrow">transfers to</span>
+        <input type="text" class="account-input" value="${item.account || item.name}" data-sav-account="${item.id}" />
+      </div>`;
+    card.appendChild(row);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-row';
+  addBtn.textContent = '+ Add a savings line';
+  addBtn.addEventListener('click', ()=>{
+    data.savings.push({ id:newId('s'), name:'New savings goal', amount:0, account:'New savings goal' });
+    renderAll();
+  });
+  card.appendChild(addBtn);
+
+  const totalRow = document.createElement('div');
+  totalRow.className = 'total-row';
+  totalRow.innerHTML = `<span class="label">Total savings / fortnight</span><span>$${fmt(total)}</span>`;
+  card.appendChild(totalRow);
+
+  card.querySelectorAll('[data-sav-name]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const s = data.savings.find(x=>x.id===e.target.dataset.savName);
+      s.name = e.target.value;
+      renderTransfers();
+      scheduleSave();
+    });
+  });
+  card.querySelectorAll('[data-sav-account]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const s = data.savings.find(x=>x.id===e.target.dataset.savAccount);
+      s.account = e.target.value;
+      renderTransfers();
+      scheduleSave();
+    });
+  });
+  card.querySelectorAll('[data-sav-amount]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const s = data.savings.find(x=>x.id===e.target.dataset.savAmount);
+      s.amount = Number(e.target.value);
+      renderAll();
+    });
+  });
+  card.querySelectorAll('[data-sav-remove]').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      data.savings = data.savings.filter(x=>x.id!==e.target.dataset.savRemove);
+      renderAll();
+    });
+  });
+}
+
+function computeTransfers(){
+  const map = {}; // account name -> { amount, count }
+  function add(account, amount){
+    const key = (account || '').trim() || 'Uncategorised';
+    if(!map[key]) map[key] = { amount:0, count:0 };
+    map[key].amount += amount;
+    map[key].count += 1;
+  }
+  data.bills.forEach(b => add(b.account, fortnightlyOf(b.amount, b.cycle)));
+  add('Ryan', data.spending.ryan);
+  add('Morgan', data.spending.morgan);
+  add(data.food.week1.account, data.food.week1.amount);
+  add(data.food.week2.account, data.food.week2.amount);
+  data.savings.forEach(s => add(s.account || s.name, Number(s.amount) || 0));
+  return map;
+}
+
+function renderTransfers(){
+  const card = document.getElementById('transfersCard');
+  card.innerHTML = '';
+  const map = computeTransfers();
+  const entries = Object.entries(map).sort((a,b)=> b[1].amount - a[1].amount);
+
+  let allocated = 0;
+  entries.forEach(([account, info])=>{
+    allocated += info.amount;
+    const row = document.createElement('div');
+    row.className = 'transfer-row';
+    row.innerHTML = `
+      <div class="acct">
+        <span class="name">${account}</span>
+        <span class="count">${info.count} item${info.count>1?'s':''}</span>
+      </div>
+      <span class="amt">$${fmt(info.amount)}</span>`;
+    card.appendChild(row);
+  });
+
+  const income = data.income.morgan + data.income.ryan;
+  const leftover = income - allocated;
+
+  const leftoverRow = document.createElement('div');
+  leftoverRow.className = 'transfer-row leftover';
+  leftoverRow.innerHTML = `
+    <div class="acct">
+      <input type="text" class="account-input" value="${data.leftoverAccount}" id="leftoverAccountInput" />
+    </div>
+    <span class="amt">$${fmt(Math.max(leftover,0))}</span>`;
+  card.appendChild(leftoverRow);
+
+  const check = document.createElement('div');
+  check.className = 'transfer-check ' + (leftover >= 0 ? 'balanced' : 'unbalanced');
+  check.textContent = leftover >= 0
+    ? `These transfers use $${fmt(allocated)} of your $${fmt(income)} income — $${fmt(leftover)} left to place.`
+    : `These transfers add up to $${fmt(allocated)}, which is $${fmt(Math.abs(leftover))} more than your $${fmt(income)} income — reduce a bill or transfer.`;
+  card.appendChild(check);
+
+  const leftoverInput = document.getElementById('leftoverAccountInput');
+  if(leftoverInput){
+    leftoverInput.addEventListener('input', e=>{
+      data.leftoverAccount = e.target.value;
+      scheduleSave();
+    });
+  }
+}
+
+function renderSummary(){
+  const card = document.getElementById('summaryCard');
+  const income = data.income.morgan + data.income.ryan;
+  const bills = data.bills.reduce((s,b)=>s + fortnightlyOf(b.amount,b.cycle), 0);
+  const spending = data.spending.morgan + data.spending.ryan;
+  const food = data.food.week1.amount + data.food.week2.amount;
+  const savings = data.savings.reduce((s,x)=>s + (Number(x.amount)||0), 0);
+  const remaining = income - bills - spending - food - savings;
+
+  card.innerHTML = `
+    <div class="summary-line income"><span>Total income</span><span>$${fmt(income)}</span></div>
+    <div class="summary-line"><span>Shared bills</span><span>− $${fmt(bills)}</span></div>
+    <div class="summary-line"><span>Spending money</span><span>− $${fmt(spending)}</span></div>
+    <div class="summary-line"><span>Food shopping</span><span>− $${fmt(food)}</span></div>
+    <div class="summary-line"><span>Savings & buffer</span><span>− $${fmt(savings)}</span></div>
+    <div class="summary-divider"></div>
+    <div class="summary-final ${remaining>=0?'positive':'negative'}">
+      <span class="label">${remaining>=0 ? 'Left over' : 'Short by'}</span>
+      <span class="value">$${fmt(Math.abs(remaining))}</span>
+    </div>
+  `;
+}
+
+function renderAll(){
+  renderIncome();
+  renderBills();
+  renderSpending();
+  renderFood();
+  renderSavings();
+  renderTransfers();
+  renderSummary();
+  scheduleSave();
+}
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Reset every figure back to your original starting numbers? This cannot be undone.')){
+    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    renderAll();
+  }
+});
+
+(async function init(){
+  await loadData();
+  renderAll();
+})();
+</script>
+</body>
+</html>
