@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Morgan & Ryan — Household Ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#EEF1E7;
-    --card:#FBFBF7;
+    --paper:#EAEEE3;
+    --card:#FDFDFA;
+    --field:#F3F5EC;
     --ink:#1E2A22;
-    --ink-soft:#5B6459;
-    --rule:#D3D8C6;
+    --ink-soft:#63705F;
+    --rule:#DADFCD;
     --teal:#2F5D50;
     --teal-deep:#1F4238;
-    --gold:#B0812E;
+    --gold:#A9781F;
     --rose:#B5525A;
-    --rose-bg:#F5E4E3;
-    --gold-bg:#F3EAD6;
-    --teal-bg:#E4EDE7;
+    --teal-bg:#E2ECE5;
+    --gold-bg:#F3E9D3;
   }
   *{box-sizing:border-box;}
   body{
@@ -27,187 +27,198 @@
     background:var(--paper);
     color:var(--ink);
     font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    padding:32px 16px 96px;
+    padding:40px 16px 100px;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:760px;margin:0 auto;}
+  .wrap{max-width:740px;margin:0 auto;}
 
   header.ledger-head{
     display:flex;
     justify-content:space-between;
     align-items:flex-end;
-    border-bottom:2px solid var(--ink);
-    padding-bottom:18px;
-    margin-bottom:28px;
+    margin-bottom:32px;
     flex-wrap:wrap;
-    gap:12px;
+    gap:14px;
   }
   header.ledger-head .names{
     font-family:'Fraunces', serif;
-    font-weight:600;
-    font-size:2.1rem;
-    letter-spacing:-0.01em;
+    font-weight:700;
+    font-size:2.3rem;
+    letter-spacing:-0.015em;
     line-height:1.05;
+    color:var(--teal-deep);
   }
   header.ledger-head .names em{
     font-style:italic;
     font-weight:500;
-    color:var(--teal);
+    color:var(--gold);
+    margin:0 4px;
   }
   header.ledger-head .sub{
-    font-size:0.8rem;
+    font-size:0.82rem;
     color:var(--ink-soft);
-    margin-top:4px;
+    margin-top:6px;
   }
-  header.ledger-head .cycle-label{
+  header.ledger-head .status-pill{
     font-size:0.7rem;
-    color:var(--ink-soft);
+    color:var(--teal-deep);
     border:1px solid var(--rule);
     border-radius:20px;
-    padding:5px 12px;
+    padding:6px 14px;
     background:var(--card);
     white-space:nowrap;
+    box-shadow:0 1px 2px rgba(30,42,34,0.05);
   }
 
-  section{margin-bottom:34px;}
+  section{margin-bottom:30px;}
   .section-title{
     display:flex;
     align-items:baseline;
     justify-content:space-between;
-    margin-bottom:12px;
+    margin-bottom:11px;
     gap:10px;
     flex-wrap:wrap;
   }
   .section-title h2{
     font-family:'Fraunces', serif;
     font-weight:600;
-    font-size:1.15rem;
+    font-size:1.12rem;
     margin:0;
+    color:var(--teal-deep);
   }
   .section-title .hint{
-    font-size:0.75rem;
+    font-size:0.74rem;
     color:var(--ink-soft);
   }
 
   .card{
     background:var(--card);
     border:1px solid var(--rule);
-    border-radius:6px;
+    border-radius:12px;
     overflow:hidden;
+    box-shadow:0 1px 2px rgba(30,42,34,0.04), 0 6px 18px rgba(30,42,34,0.045);
   }
 
-  /* generic simple row (income / spending amounts) */
-  .row.simple{
+  /* ---------- field styling (shared) ---------- */
+  input.text-field, input.num-field{
+    font-family:'Inter',sans-serif;
+    font-size:0.92rem;
+    color:var(--ink);
+    background:var(--field);
+    border:1px solid transparent;
+    border-radius:7px;
+    padding:7px 10px;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  input.text-field:hover, input.num-field:hover{border-color:var(--rule);}
+  input.text-field:focus, input.num-field:focus{
+    outline:none;
+    border-color:var(--teal);
+    background:#fff;
+  }
+  input.text-field:disabled{
+    background:transparent;
+    color:var(--ink);
+    opacity:0.85;
+    font-weight:500;
+  }
+  input.num-field{
+    font-family:'IBM Plex Mono', monospace;
+    text-align:right;
+    width:90px;
+    -moz-appearance:textfield;
+  }
+  input.num-field::-webkit-outer-spin-button,
+  input.num-field::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+
+  select.cycle-field{
+    font-family:'Inter',sans-serif;
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    background:var(--field);
+    border:1px solid transparent;
+    border-radius:7px;
+    padding:7px 8px;
+  }
+  select.cycle-field:hover{border-color:var(--rule);}
+  select.cycle-field:focus{outline:none;border-color:var(--teal);}
+
+  .account-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--teal-deep);
+    background:var(--teal-bg);
+    border:1px solid transparent;
+    border-radius:20px;
+    padding:5px 12px;
+    width:auto;
+  }
+  .account-tag:hover{border-color:var(--teal);}
+  .account-tag:focus{outline:none;border-color:var(--teal);background:#fff;}
+
+  /* ---------- simple two-col row (income / spending) ---------- */
+  .row-simple{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:10px;
-    padding:11px 14px;
+    gap:12px;
+    padding:12px 18px;
     border-bottom:1px solid var(--rule);
   }
-  .row.simple:last-child{border-bottom:none;}
-  .row.simple input[type="text"]{
-    border:none;background:transparent;font-family:'Inter',sans-serif;
-    font-size:0.92rem;color:var(--ink);width:100%;
-  }
-  .row.simple input[type="text"]:disabled{color:var(--ink);opacity:0.8;}
+  .row-simple:last-child{border-bottom:none;}
+  .row-simple .row-label{flex:1;}
+  .row-simple .amount-wrap{display:flex;align-items:center;gap:4px;}
+  .row-simple .amount-wrap .dollar{color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:0.92rem;}
 
-  /* bill / food / savings line item: name+amount+cycle on line 1, account transfer target on line 2 */
+  /* ---------- item row (bills / food / savings) ---------- */
   .item-row{
-    padding:10px 14px;
+    padding:13px 18px;
     border-bottom:1px solid var(--rule);
   }
   .item-row:last-child{border-bottom:none;}
   .item-row .line1{
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:9px;
     flex-wrap:wrap;
   }
-  .item-row .line1 .name-input{
-    flex:1 1 140px;
-    min-width:100px;
-    border:none;background:transparent;font-family:'Inter',sans-serif;
-    font-size:0.92rem;color:var(--ink);padding:2px 0;
+  .item-row .line1 .name-input{flex:1 1 130px;min-width:100px;}
+  .item-row .line1 .controls{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin-left:auto;
   }
-  .item-row .line1 .name-input:focus{outline:none;border-bottom:1px solid var(--teal);}
-  .item-row .line1 .name-input:disabled{opacity:0.8;}
+  .item-row .line1 .amount-wrap{display:flex;align-items:center;gap:4px;}
+  .item-row .line1 .amount-wrap .dollar{color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;font-size:0.9rem;}
+  .item-row .line1 .fortnight-val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.92rem;
+    font-weight:600;
+    min-width:76px;
+    text-align:right;
+    color:var(--teal-deep);
+  }
+  .item-row .remove-btn{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:1.15rem;
+    cursor:pointer;
+    line-height:1;
+    padding:0 2px;
+  }
+  .item-row .remove-btn:hover{color:var(--rose);}
   .item-row .line2{
     display:flex;
     align-items:center;
-    gap:6px;
-    margin-top:5px;
-    padding-left:2px;
+    gap:8px;
+    margin-top:8px;
   }
   .item-row .line2 .arrow{
     font-size:0.72rem;
     color:var(--ink-soft);
   }
-  .item-row .line2 input.account-input{
-    border:none;
-    border-bottom:1px dashed var(--rule);
-    background:transparent;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.74rem;
-    color:var(--teal-deep);
-    padding:2px 2px;
-    width:150px;
-  }
-  .item-row .line2 input.account-input:focus{outline:none;border-bottom:1px solid var(--teal);}
-
-  .amount-field{
-    display:flex;
-    align-items:center;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.92rem;
-    flex:0 0 auto;
-  }
-  .amount-field span.dollar{color:var(--ink-soft);margin-right:2px;}
-  .amount-field input[type="number"]{
-    border:none;
-    background:transparent;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.92rem;
-    color:var(--ink);
-    width:76px;
-    text-align:right;
-    -moz-appearance:textfield;
-  }
-  .amount-field input[type="number"]::-webkit-outer-spin-button,
-  .amount-field input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-  .amount-field input[type="number"]:focus{outline:none;}
-
-  select.cycle{
-    font-family:'Inter',sans-serif;
-    font-size:0.76rem;
-    color:var(--ink-soft);
-    background:transparent;
-    border:1px solid var(--rule);
-    border-radius:4px;
-    padding:4px 5px;
-    flex:0 0 auto;
-  }
-
-  .fortnight-val{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:0.92rem;
-    font-weight:500;
-    min-width:74px;
-    text-align:right;
-    flex:0 0 auto;
-  }
-
-  .remove-btn{
-    background:none;
-    border:none;
-    color:var(--ink-soft);
-    font-size:1.1rem;
-    cursor:pointer;
-    line-height:1;
-    padding:0 2px;
-    flex:0 0 auto;
-  }
-  .remove-btn:hover{color:var(--rose);}
 
   .add-row{
     display:block;
@@ -218,8 +229,9 @@
     border-top:1px dashed var(--rule);
     color:var(--teal);
     font-family:'Inter',sans-serif;
+    font-weight:500;
     font-size:0.82rem;
-    padding:9px 14px;
+    padding:11px 18px;
     cursor:pointer;
   }
   .add-row:hover{background:var(--teal-bg);}
@@ -227,74 +239,62 @@
   .total-row{
     display:flex;
     justify-content:space-between;
-    padding:10px 14px;
+    padding:12px 18px;
     background:var(--teal-bg);
     font-family:'IBM Plex Mono', monospace;
-    font-weight:500;
+    font-weight:600;
     font-size:0.92rem;
+    color:var(--teal-deep);
   }
-  .total-row .label{font-family:'Inter',sans-serif;font-weight:500;color:var(--teal-deep);}
+  .total-row .label{font-family:'Inter',sans-serif;font-weight:600;}
 
-  /* Transfers section */
+  /* ---------- transfers ---------- */
   .transfer-row{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:11px 14px;
+    padding:13px 18px;
     border-bottom:1px solid var(--rule);
-    gap:10px;
+    gap:12px;
   }
   .transfer-row:last-child{border-bottom:none;}
-  .transfer-row .acct{
-    display:flex;
-    align-items:baseline;
-    gap:8px;
-    min-width:0;
-  }
+  .transfer-row .acct{display:flex;align-items:baseline;gap:9px;min-width:0;}
   .transfer-row .acct .name{
     font-family:'Inter',sans-serif;
-    font-weight:500;
-    font-size:0.92rem;
+    font-weight:600;
+    font-size:0.94rem;
   }
   .transfer-row .acct .count{
-    font-size:0.72rem;
+    font-size:0.7rem;
     color:var(--ink-soft);
     white-space:nowrap;
   }
   .transfer-row .amt{
     font-family:'IBM Plex Mono', monospace;
-    font-size:0.95rem;
-    font-weight:600;
+    font-size:0.98rem;
+    font-weight:700;
     color:var(--teal-deep);
     white-space:nowrap;
   }
+  .transfer-row.leftover{background:var(--gold-bg);}
   .transfer-row.leftover .amt{color:var(--gold);}
-  .transfer-row .account-input{
-    border:none;
-    border-bottom:1px dashed var(--rule);
-    background:transparent;
-    font-family:'Inter',sans-serif;
-    font-weight:500;
-    font-size:0.92rem;
-    color:var(--ink);
-    padding:2px 2px;
-  }
-  .transfer-row .account-input:focus{outline:none;border-bottom:1px solid var(--teal);}
+  .transfer-row.leftover input.text-field{background:#fff;}
   .transfer-check{
-    padding:10px 14px;
-    font-size:0.74rem;
+    padding:11px 18px;
+    font-size:0.76rem;
     color:var(--ink-soft);
     border-top:1px dashed var(--rule);
   }
   .transfer-check.balanced{color:var(--teal);}
-  .transfer-check.unbalanced{color:var(--rose);}
+  .transfer-check.unbalanced{color:var(--rose);font-weight:500;}
 
-  /* Summary */
+  /* ---------- summary ---------- */
   .summary{
-    border:2px solid var(--ink);
-    border-radius:6px;
-    padding:20px;
+    border:2px solid var(--teal-deep);
+    border-radius:12px;
+    padding:22px 24px;
     background:var(--card);
+    box-shadow:0 2px 4px rgba(30,42,34,0.05), 0 10px 24px rgba(30,42,34,0.06);
   }
   .summary-line{
     display:flex;
@@ -304,37 +304,38 @@
     padding:5px 0;
     color:var(--ink-soft);
   }
-  .summary-line.income{color:var(--ink);font-weight:500;}
-  .summary-divider{border-top:1px solid var(--rule);margin:8px 0;}
+  .summary-line.income{color:var(--ink);font-weight:600;}
+  .summary-divider{border-top:1px solid var(--rule);margin:10px 0;}
   .summary-final{
     display:flex;
     justify-content:space-between;
     align-items:baseline;
-    padding-top:6px;
+    padding-top:4px;
   }
   .summary-final .label{
     font-family:'Fraunces', serif;
-    font-size:1.05rem;
+    font-size:1.1rem;
     font-weight:600;
   }
   .summary-final .value{
     font-family:'IBM Plex Mono', monospace;
-    font-size:1.7rem;
-    font-weight:600;
+    font-size:1.9rem;
+    font-weight:700;
   }
   .summary-final.positive .value{color:var(--teal);}
   .summary-final.negative .value{color:var(--rose);}
 
   .save-note{
     position:fixed;
-    bottom:16px;
-    right:16px;
+    bottom:18px;
+    right:18px;
     font-size:0.72rem;
     color:var(--ink-soft);
     background:var(--card);
     border:1px solid var(--rule);
-    padding:6px 12px;
+    padding:7px 14px;
     border-radius:20px;
+    box-shadow:0 2px 8px rgba(30,42,34,0.08);
     opacity:0;
     transition:opacity 0.4s ease;
   }
@@ -343,7 +344,7 @@
   footer.actions{
     display:flex;
     justify-content:center;
-    margin-top:36px;
+    margin-top:38px;
   }
   footer.actions button{
     background:none;
@@ -351,15 +352,17 @@
     color:var(--ink-soft);
     font-family:'Inter',sans-serif;
     font-size:0.78rem;
-    padding:8px 16px;
+    padding:9px 18px;
     border-radius:20px;
     cursor:pointer;
   }
-  footer.actions button:hover{border-color:var(--rose);color:var(--rose);}
+  footer.actions button:hover{border-color:var(--rose);color:var(--rose);background:#fff;}
 
-  @media (max-width:480px){
-    header.ledger-head .names{font-size:1.6rem;}
-    .item-row .line2 input.account-input{width:110px;}
+  @media (max-width:520px){
+    header.ledger-head .names{font-size:1.8rem;}
+    .item-row .line1{gap:6px;}
+    .item-row .line1 .controls{margin-left:0;width:100%;justify-content:space-between;}
+    input.num-field{width:74px;}
   }
 </style>
 </head>
@@ -371,7 +374,7 @@
       <div class="names">Morgan <em>&</em> Ryan</div>
       <div class="sub">Household ledger, per fortnight</div>
     </div>
-    <div class="cycle-label" id="lastUpdated">Not yet saved</div>
+    <div class="status-pill" id="lastUpdated">Not yet saved</div>
   </header>
 
   <section>
@@ -424,11 +427,11 @@
 
 <script>
 const CYCLES = {
-  weekly:   { label: 'Weekly',    mult: 2 },
+  weekly:      { label: 'Weekly',      mult: 2 },
   fortnightly: { label: 'Fortnightly', mult: 1 },
-  monthly:  { label: 'Monthly',   mult: 12/26 },
-  quarterly:{ label: 'Quarterly', mult: 4/26 },
-  yearly:   { label: 'Yearly',    mult: 1/26 },
+  monthly:     { label: 'Monthly',     mult: 12/26 },
+  quarterly:   { label: 'Quarterly',   mult: 4/26 },
+  yearly:      { label: 'Yearly',      mult: 1/26 },
 };
 
 const DEFAULT_DATA = {
@@ -466,8 +469,11 @@ function fmt(n){
   const v = isFinite(n) ? n : 0;
   return v.toLocaleString('en-AU', { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
-
 function newId(prefix){ idCounter += 1; return prefix + idCounter; }
+function fortnightlyOf(amount, cycle){
+  const mult = (CYCLES[cycle] || CYCLES.fortnightly).mult;
+  return (Number(amount) || 0) * mult;
+}
 
 function migrate(d){
   d.bills = (d.bills || []).map(b => ({ account:'Bills', ...b }));
@@ -483,7 +489,7 @@ function migrate(d){
   return d;
 }
 
-async function loadData(){
+function loadData(){
   try{
     const raw = window.localStorage.getItem('budget-data');
     if(raw){
@@ -506,71 +512,66 @@ function scheduleSave(){
       setTimeout(()=>note.classList.remove('show'), 1200);
       document.getElementById('lastUpdated').textContent = 'Saved just now';
     }catch(e){
-      console.error('Save failed', e);
       document.getElementById('lastUpdated').textContent = 'Could not save (storage blocked)';
     }
   }, 400);
 }
 
-function fortnightlyOf(amount, cycle){
-  const mult = (CYCLES[cycle] || CYCLES.fortnightly).mult;
-  return (Number(amount) || 0) * mult;
-}
+// ============================================================
+// BUILD functions — create DOM once. Only called on load,
+// reset, or when a row is added/removed (never on keystroke).
+// ============================================================
 
-// ---------- Renderers ----------
-
-function renderIncome(){
+function buildIncome(){
   const card = document.getElementById('incomeCard');
   card.innerHTML = '';
   ['morgan','ryan'].forEach(key=>{
     const row = document.createElement('div');
-    row.className = 'row simple';
+    row.className = 'row-simple';
     const label = key === 'morgan' ? 'Morgan' : 'Ryan';
     row.innerHTML = `
-      <input type="text" value="${label}" disabled />
-      <div class="amount-field"><span class="dollar">$</span>
-        <input type="number" step="1" value="${data.income[key]}" data-income="${key}" />
+      <input type="text" class="text-field row-label" value="${label}" disabled />
+      <div class="amount-wrap"><span class="dollar">$</span>
+        <input type="number" class="num-field" step="1" value="${data.income[key]}" data-income="${key}" />
       </div>`;
     card.appendChild(row);
   });
-  const total = data.income.morgan + data.income.ryan;
   const totalRow = document.createElement('div');
   totalRow.className = 'total-row';
-  totalRow.innerHTML = `<span class="label">Total income</span><span>$${fmt(total)}</span>`;
+  totalRow.innerHTML = `<span class="label">Total income</span><span id="income-total"></span>`;
   card.appendChild(totalRow);
 
   card.querySelectorAll('input[data-income]').forEach(inp=>{
     inp.addEventListener('input', e=>{
       data.income[e.target.dataset.income] = Number(e.target.value);
-      renderAll();
+      refreshComputed();
     });
   });
 }
 
-function renderBills(){
+function buildBills(){
   const card = document.getElementById('billsCard');
   card.innerHTML = '';
-  let total = 0;
   data.bills.forEach(bill=>{
-    const fn = fortnightlyOf(bill.amount, bill.cycle);
-    total += fn;
     const cycleOptions = Object.keys(CYCLES).map(c=>
       `<option value="${c}" ${c===bill.cycle?'selected':''}>${CYCLES[c].label}</option>`).join('');
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML = `
       <div class="line1">
-        <input type="text" class="name-input" value="${bill.name}" data-bill-name="${bill.id}" />
-        <div class="amount-field"><span class="dollar">$</span>
-          <input type="number" step="1" value="${bill.amount}" data-bill-amount="${bill.id}" />
+        <input type="text" class="text-field name-input" value="${bill.name}" data-bill-name="${bill.id}" />
+        <div class="controls">
+          <div class="amount-wrap"><span class="dollar">$</span>
+            <input type="number" class="num-field" step="1" value="${bill.amount}" data-bill-amount="${bill.id}" />
+          </div>
+          <select class="cycle-field" data-bill-cycle="${bill.id}">${cycleOptions}</select>
+          <span class="fortnight-val" id="fn-${bill.id}"></span>
+          <button class="remove-btn" data-bill-remove="${bill.id}" title="Remove">×</button>
         </div>
-        <select class="cycle" data-bill-cycle="${bill.id}">${cycleOptions}</select>
-        <span class="fortnight-val">$${fmt(fn)}</span>
-        <button class="remove-btn" data-bill-remove="${bill.id}" title="Remove">×</button>
       </div>
       <div class="line2">
         <span class="arrow">transfers to</span>
-        <input type="text" class="account-input" value="${bill.account || 'Bills'}" data-bill-account="${bill.id}" />
+        <input type="text" class="text-field account-tag" value="${bill.account || 'Bills'}" data-bill-account="${bill.id}" />
       </div>`;
     card.appendChild(row);
   });
@@ -580,81 +581,77 @@ function renderBills(){
   addBtn.textContent = '+ Add a bill';
   addBtn.addEventListener('click', ()=>{
     data.bills.push({ id:newId('b'), name:'New bill', amount:0, cycle:'monthly', account:'Bills' });
-    renderAll();
+    buildBills();
+    refreshComputed();
   });
   card.appendChild(addBtn);
 
   const totalRow = document.createElement('div');
   totalRow.className = 'total-row';
-  totalRow.innerHTML = `<span class="label">Total bills / fortnight</span><span>$${fmt(total)}</span>`;
+  totalRow.innerHTML = `<span class="label">Total bills / fortnight</span><span id="bills-total"></span>`;
   card.appendChild(totalRow);
 
   card.querySelectorAll('[data-bill-name]').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      const b = data.bills.find(x=>x.id===e.target.dataset.billName);
-      b.name = e.target.value;
-      scheduleSave();
+      data.bills.find(x=>x.id===e.target.dataset.billName).name = e.target.value;
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-bill-account]').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      const b = data.bills.find(x=>x.id===e.target.dataset.billAccount);
-      b.account = e.target.value;
-      renderTransfers();
-      scheduleSave();
+      data.bills.find(x=>x.id===e.target.dataset.billAccount).account = e.target.value;
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-bill-amount]').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      const b = data.bills.find(x=>x.id===e.target.dataset.billAmount);
-      b.amount = Number(e.target.value);
-      renderAll();
+      data.bills.find(x=>x.id===e.target.dataset.billAmount).amount = Number(e.target.value);
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-bill-cycle]').forEach(sel=>{
     sel.addEventListener('change', e=>{
-      const b = data.bills.find(x=>x.id===e.target.dataset.billCycle);
-      b.cycle = e.target.value;
-      renderAll();
+      data.bills.find(x=>x.id===e.target.dataset.billCycle).cycle = e.target.value;
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-bill-remove]').forEach(btn=>{
     btn.addEventListener('click', e=>{
       data.bills = data.bills.filter(x=>x.id!==e.target.dataset.billRemove);
-      renderAll();
+      buildBills();
+      refreshComputed();
     });
   });
 }
 
-function renderSpending(){
+function buildSpending(){
   const card = document.getElementById('spendingCard');
   card.innerHTML = '';
   ['morgan','ryan'].forEach(key=>{
     const row = document.createElement('div');
-    row.className = 'row simple';
+    row.className = 'row-simple';
     const label = key === 'morgan' ? 'Morgan' : 'Ryan';
     row.innerHTML = `
-      <input type="text" value="${label}" disabled />
-      <div class="amount-field"><span class="dollar">$</span>
-        <input type="number" step="1" value="${data.spending[key]}" data-spend="${key}" />
+      <input type="text" class="text-field row-label" value="${label}" disabled />
+      <div class="amount-wrap"><span class="dollar">$</span>
+        <input type="number" class="num-field" step="1" value="${data.spending[key]}" data-spend="${key}" />
       </div>`;
     card.appendChild(row);
   });
-  const total = data.spending.morgan + data.spending.ryan;
   const totalRow = document.createElement('div');
   totalRow.className = 'total-row';
-  totalRow.innerHTML = `<span class="label">Total spending money</span><span>$${fmt(total)}</span>`;
+  totalRow.innerHTML = `<span class="label">Total spending money</span><span id="spending-total"></span>`;
   card.appendChild(totalRow);
 
   card.querySelectorAll('[data-spend]').forEach(inp=>{
     inp.addEventListener('input', e=>{
       data.spending[e.target.dataset.spend] = Number(e.target.value);
-      renderAll();
+      refreshComputed();
     });
   });
 }
 
-function renderFood(){
+function buildFood(){
   const card = document.getElementById('foodCard');
   card.innerHTML = '';
   [['week1','Week 1'],['week2','Week 2']].forEach(([key,label])=>{
@@ -662,57 +659,57 @@ function renderFood(){
     row.className = 'item-row';
     row.innerHTML = `
       <div class="line1">
-        <input type="text" class="name-input" value="${label}" disabled />
-        <div class="amount-field"><span class="dollar">$</span>
-          <input type="number" step="1" value="${data.food[key].amount}" data-food-amount="${key}" />
+        <input type="text" class="text-field name-input" value="${label}" disabled />
+        <div class="controls">
+          <div class="amount-wrap"><span class="dollar">$</span>
+            <input type="number" class="num-field" step="1" value="${data.food[key].amount}" data-food-amount="${key}" />
+          </div>
         </div>
       </div>
       <div class="line2">
         <span class="arrow">transfers to</span>
-        <input type="text" class="account-input" value="${data.food[key].account}" data-food-account="${key}" />
+        <input type="text" class="text-field account-tag" value="${data.food[key].account}" data-food-account="${key}" />
       </div>`;
     card.appendChild(row);
   });
-  const total = data.food.week1.amount + data.food.week2.amount;
   const totalRow = document.createElement('div');
   totalRow.className = 'total-row';
-  totalRow.innerHTML = `<span class="label">Total food / fortnight</span><span>$${fmt(total)}</span>`;
+  totalRow.innerHTML = `<span class="label">Total food / fortnight</span><span id="food-total"></span>`;
   card.appendChild(totalRow);
 
   card.querySelectorAll('[data-food-amount]').forEach(inp=>{
     inp.addEventListener('input', e=>{
       data.food[e.target.dataset.foodAmount].amount = Number(e.target.value);
-      renderAll();
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-food-account]').forEach(inp=>{
     inp.addEventListener('input', e=>{
       data.food[e.target.dataset.foodAccount].account = e.target.value;
-      renderTransfers();
-      scheduleSave();
+      refreshComputed();
     });
   });
 }
 
-function renderSavings(){
+function buildSavings(){
   const card = document.getElementById('savingsCard');
   card.innerHTML = '';
-  let total = 0;
   data.savings.forEach(item=>{
-    total += Number(item.amount) || 0;
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML = `
       <div class="line1">
-        <input type="text" class="name-input" value="${item.name}" data-sav-name="${item.id}" />
-        <div class="amount-field"><span class="dollar">$</span>
-          <input type="number" step="1" value="${item.amount}" data-sav-amount="${item.id}" />
+        <input type="text" class="text-field name-input" value="${item.name}" data-sav-name="${item.id}" />
+        <div class="controls">
+          <div class="amount-wrap"><span class="dollar">$</span>
+            <input type="number" class="num-field" step="1" value="${item.amount}" data-sav-amount="${item.id}" />
+          </div>
+          <button class="remove-btn" data-sav-remove="${item.id}" title="Remove">×</button>
         </div>
-        <button class="remove-btn" data-sav-remove="${item.id}" title="Remove">×</button>
       </div>
       <div class="line2">
         <span class="arrow">transfers to</span>
-        <input type="text" class="account-input" value="${item.account || item.name}" data-sav-account="${item.id}" />
+        <input type="text" class="text-field account-tag" value="${item.account || item.name}" data-sav-account="${item.id}" />
       </div>`;
     card.appendChild(row);
   });
@@ -722,48 +719,50 @@ function renderSavings(){
   addBtn.textContent = '+ Add a savings line';
   addBtn.addEventListener('click', ()=>{
     data.savings.push({ id:newId('s'), name:'New savings goal', amount:0, account:'New savings goal' });
-    renderAll();
+    buildSavings();
+    refreshComputed();
   });
   card.appendChild(addBtn);
 
   const totalRow = document.createElement('div');
   totalRow.className = 'total-row';
-  totalRow.innerHTML = `<span class="label">Total savings / fortnight</span><span>$${fmt(total)}</span>`;
+  totalRow.innerHTML = `<span class="label">Total savings / fortnight</span><span id="savings-total"></span>`;
   card.appendChild(totalRow);
 
   card.querySelectorAll('[data-sav-name]').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      const s = data.savings.find(x=>x.id===e.target.dataset.savName);
-      s.name = e.target.value;
-      renderTransfers();
-      scheduleSave();
+      data.savings.find(x=>x.id===e.target.dataset.savName).name = e.target.value;
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-sav-account]').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      const s = data.savings.find(x=>x.id===e.target.dataset.savAccount);
-      s.account = e.target.value;
-      renderTransfers();
-      scheduleSave();
+      data.savings.find(x=>x.id===e.target.dataset.savAccount).account = e.target.value;
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-sav-amount]').forEach(inp=>{
     inp.addEventListener('input', e=>{
-      const s = data.savings.find(x=>x.id===e.target.dataset.savAmount);
-      s.amount = Number(e.target.value);
-      renderAll();
+      data.savings.find(x=>x.id===e.target.dataset.savAmount).amount = Number(e.target.value);
+      refreshComputed();
     });
   });
   card.querySelectorAll('[data-sav-remove]').forEach(btn=>{
     btn.addEventListener('click', e=>{
       data.savings = data.savings.filter(x=>x.id!==e.target.dataset.savRemove);
-      renderAll();
+      buildSavings();
+      refreshComputed();
     });
   });
 }
 
-function computeTransfers(){
-  const map = {}; // account name -> { amount, count }
+// Transfers card is rebuilt on every change EXCEPT typing in its own
+// leftover-account input (handled separately so it never loses focus).
+function buildTransfers(){
+  const card = document.getElementById('transfersCard');
+  card.innerHTML = '';
+
+  const map = {};
   function add(account, amount){
     const key = (account || '').trim() || 'Uncategorised';
     if(!map[key]) map[key] = { amount:0, count:0 };
@@ -776,15 +775,8 @@ function computeTransfers(){
   add(data.food.week1.account, data.food.week1.amount);
   add(data.food.week2.account, data.food.week2.amount);
   data.savings.forEach(s => add(s.account || s.name, Number(s.amount) || 0));
-  return map;
-}
 
-function renderTransfers(){
-  const card = document.getElementById('transfersCard');
-  card.innerHTML = '';
-  const map = computeTransfers();
   const entries = Object.entries(map).sort((a,b)=> b[1].amount - a[1].amount);
-
   let allocated = 0;
   entries.forEach(([account, info])=>{
     allocated += info.amount;
@@ -806,7 +798,7 @@ function renderTransfers(){
   leftoverRow.className = 'transfer-row leftover';
   leftoverRow.innerHTML = `
     <div class="acct">
-      <input type="text" class="account-input" value="${data.leftoverAccount}" id="leftoverAccountInput" />
+      <input type="text" class="text-field account-tag" value="${data.leftoverAccount}" id="leftoverAccountInput" />
     </div>
     <span class="amt">$${fmt(Math.max(leftover,0))}</span>`;
   card.appendChild(leftoverRow);
@@ -818,16 +810,14 @@ function renderTransfers(){
     : `These transfers add up to $${fmt(allocated)}, which is $${fmt(Math.abs(leftover))} more than your $${fmt(income)} income — reduce a bill or transfer.`;
   card.appendChild(check);
 
-  const leftoverInput = document.getElementById('leftoverAccountInput');
-  if(leftoverInput){
-    leftoverInput.addEventListener('input', e=>{
-      data.leftoverAccount = e.target.value;
-      scheduleSave();
-    });
-  }
+  // Typing in the leftover account name must NOT rebuild this card.
+  document.getElementById('leftoverAccountInput').addEventListener('input', e=>{
+    data.leftoverAccount = e.target.value;
+    scheduleSave();
+  });
 }
 
-function renderSummary(){
+function buildSummary(){
   const card = document.getElementById('summaryCard');
   const income = data.income.morgan + data.income.ryan;
   const bills = data.bills.reduce((s,b)=>s + fortnightlyOf(b.amount,b.cycle), 0);
@@ -850,28 +840,62 @@ function renderSummary(){
   `;
 }
 
-function renderAll(){
-  renderIncome();
-  renderBills();
-  renderSpending();
-  renderFood();
-  renderSavings();
-  renderTransfers();
-  renderSummary();
+// ============================================================
+// refreshComputed — runs on every keystroke. Only ever touches
+// <span> text (never inputs), plus fully rebuilds the transfers
+// and summary cards, which never hold the input being typed in.
+// This is what keeps focus in place while you type.
+// ============================================================
+function refreshComputed(){
+  const incomeTotal = data.income.morgan + data.income.ryan;
+  const incomeEl = document.getElementById('income-total');
+  if(incomeEl) incomeEl.textContent = '$' + fmt(incomeTotal);
+
+  let billsTotal = 0;
+  data.bills.forEach(b=>{
+    const fn = fortnightlyOf(b.amount, b.cycle);
+    billsTotal += fn;
+    const el = document.getElementById('fn-'+b.id);
+    if(el) el.textContent = '$' + fmt(fn);
+  });
+  const billsTotalEl = document.getElementById('bills-total');
+  if(billsTotalEl) billsTotalEl.textContent = '$' + fmt(billsTotal);
+
+  const spendingTotal = data.spending.morgan + data.spending.ryan;
+  const spendingEl = document.getElementById('spending-total');
+  if(spendingEl) spendingEl.textContent = '$' + fmt(spendingTotal);
+
+  const foodTotal = data.food.week1.amount + data.food.week2.amount;
+  const foodEl = document.getElementById('food-total');
+  if(foodEl) foodEl.textContent = '$' + fmt(foodTotal);
+
+  const savingsTotal = data.savings.reduce((s,x)=>s + (Number(x.amount)||0), 0);
+  const savingsEl = document.getElementById('savings-total');
+  if(savingsEl) savingsEl.textContent = '$' + fmt(savingsTotal);
+
+  buildTransfers();
+  buildSummary();
   scheduleSave();
+}
+
+function buildAll(){
+  buildIncome();
+  buildBills();
+  buildSpending();
+  buildFood();
+  buildSavings();
+  refreshComputed();
 }
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   if(confirm('Reset every figure back to your original starting numbers? This cannot be undone.')){
     data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-    renderAll();
+    buildAll();
   }
 });
 
-(async function init(){
-  await loadData();
-  renderAll();
-})();
+loadData();
+buildAll();
 </script>
 </body>
 </html>
